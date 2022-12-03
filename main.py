@@ -35,8 +35,8 @@ def compute_first_digits(img, debug):
     # if not (first_digits >= 1).all() and (first_digits <= 9).all():
     #     raise ValueError("Error")
 
-    # if debug:
-    #     print(first_digits)
+    if debug:
+        print(first_digits)
 
     return first_digits
 
@@ -73,14 +73,14 @@ def benford_law_check(first_digits, probability, debug):
     
     return True
 
-def tamper_image(img, k=31):
+def tamper_image(img, k=5):
     newImg = cv2.medianBlur(img, k)
     return newImg
 
 images = read_images()
 tamper_images = []
 
-debugMode = False
+debugMode = True
 
 # Default images
 print('--Default images--')
@@ -99,33 +99,35 @@ for img in images:
         print('Original: ' + img + ' does not satisfy Benford\'s Law!')
         title = 'Fraud Detected: ' + img + ' (Original)'
 
-    # yaxis = yaxis / yaxis.sum()
-    plt.bar(unq, probability, label='Original')
-    plt.ylabel('Probability')
-    plt.xlabel('First Digit')
-    plt.title(title)    
-    plt.show(block=False)
+#     plt.bar(unq, probability, label='Original')
+#     plt.plot(unq, probability, color='black', linestyle='dashed', linewidth=3, marker='x')
+#     plt.ylabel('Probability')
+#     plt.xlabel('First Digit')
+#     plt.title(title)    
+#     plt.show(block=False)
 
 
 
-# 10 Percent Tampered images
-print('--10 Percent Tampered images--')
+# Partially Percent Tampered images
+print('--Partially Percent Tampered images--')
 for img in images:
     image = cv2.imread('./images/' + img, cv2.IMREAD_GRAYSCALE)
     rows,cols = image.shape
 
     # Select a random pixel in the image
-    randompixel = np.random.choice(image[0], replace=False)
+    # randompixel = np.random.choice(image[0], replace=False)
 
-    if debugMode:
-        print('Pixel Intensity Replaced: ', randompixel)
+    # if debugMode:
+    #     print('Pixel Intensity Replaced: ', randompixel)
     
-    for i in range(rows):
-        for j in range(cols):
-            if image[i][j] == randompixel:
-                image[i][j] = 0
+    # for i in range(rows):
+    #     for j in range(cols):
+    #         if image[i][j] == randompixel:
+    #             image[i][j] = 0
 
-    unq, counts = compute_first_digits_counts(image, debugMode)
+    tamperImg = tamper_image(image)
+
+    unq, counts = compute_first_digits_counts(tamperImg, debugMode)
     probability = compute_probability(unq, counts, debugMode)
     isBenford = benford_law_check(unq, probability, debugMode)
 
@@ -136,32 +138,35 @@ for img in images:
         print('Partially Tampered: ' + img + ' does not satisfy Benford\'s Law!')
         title = 'Fraud Detected: ' + img + ' (Partially Tampered)'
 
-    plt.bar(unq, probability, label='Partially Tampered')
-    plt.show(block=False)
+#     plt.bar(unq, probability, label='Partially Tampered')
+#     plt.plot(unq, probability, color='red', linestyle='dashed', linewidth=3, marker='x')
+#     plt.show(block=False)
 
-# # Full Tamper images
+# Full Tamper images
 print('--Tamper images--')
 for img in images:
     image = cv2.imread('./images/' + img, cv2.IMREAD_GRAYSCALE)
-    # tamper_images.append(tamper_image(image))
-    tamperImg = tamper_image(image)
+    # tamperImg = tamper_image(image)
+    tamperImg=image
+    print(img)
 
     unq, counts = compute_first_digits_counts(tamperImg, debugMode)
     probability = compute_probability(unq, counts, debugMode)
-    isBenford = benford_law_check(unq, counts, debugMode)
+    isBenford = benford_law_check(unq, probability, debugMode)
     
     if isBenford:
         print('Fully Tampered: ' + img + ' satisfies Benford\'s Law!')
-        title = 'Benford\'s Law: ' + img + ' (Fully Tampered)'
+        title = 'Benford\'s L   aw: ' + img + ' (Fully Tampered)'
     else:
         print('Fully Tampered:' + img + ' does not satisfy Benford\'s Law!')
         title = 'Fraud Detected: ' + img + ' (Fully Tampered)'
 
-    plt.bar(unq, counts, label='Fully Tampered')
-    plt.ylabel('Probability of Occurrence')        
-    plt.xlabel('First digit')
-    plt.legend()
-    plt.show()
+    # plt.bar(unq, probability, label='Fully Tampered')
+    # plt.plot(unq, probability, color='blue', linestyle='dashed', linewidth=3, marker='*')
+    # plt.ylabel('Probability of Occurrence')        
+    # plt.xlabel('First digit')
+    # plt.legend()
+    # plt.show()
 
     # cv2.imshow('Img', tamperImg)
     # cv2.waitKey(0)
